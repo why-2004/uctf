@@ -1,3 +1,4 @@
+from train import train
 from modules.ControllableModel import *
 import torch
 import torch.nn as nn

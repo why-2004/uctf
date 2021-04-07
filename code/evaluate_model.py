@@ -6,18 +6,19 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch import optim
 import torch.nn.functional as F
+
+from modules.rewards_helper import all_rewards
 from modules.masked_cross_entropy import *
 from modules.ControllableDataset import *
 from modules.ControllableModel import *
 from modules.AttentionDecoder import *
 from modules.evaluate import *
-from modules.MovingAvg import *
 from modules.trainer import *
 from scorer import *
 import torch.utils.data as data_utils
 import opts
 import argparse
-import cPickle
+import pickle
 # import _pickle as cPickle
 from modules.Vocab import Vocab
 
@@ -147,8 +148,8 @@ def initialize_model(options, vocab_file, model_file):
 def test(options, vocab_file, model_file):
     encoder, decoder, vocab_src, vocab_tgt = initialize_model(options, vocab_file, model_file)
     while True:
-        sentence = raw_input('Enter sentence: ')
-        control_vec = raw_input('Enter control vector space separated of len ' + str(control_len) + ' : ')
+        sentence = input('Enter sentence: ')
+        control_vec = input('Enter control vector space separated of len ' + str(control_len) + ' : ')
         control_vec = control_vec.split()
         print(sentence, control_vec)
         decoded_words, attn = evaluate(encoder, decoder, sentence, control_vec, len(sentence.split()) + 1, vocab_src,
@@ -164,7 +165,7 @@ def test_all(model_file, arg_file, vocab_file, sentences, scorer, outname):
     control_vectors = [1, 2, 3, 4, 5]
     output_sentences = []
     rewards = []
-    options = cPickle.load(open(arg_file, "rb"))
+    options = pickle.load(open(arg_file, "rb"))
     print(options)
     encoder, decoder, vocab_src, vocab_tgt = initialize_model(options, vocab_file, model_file)
     for sentence in sentences:
@@ -192,7 +193,7 @@ def test_all_sentences():
     vocab_file = sys.argv[3]
     sentence_file = sys.argv[4]
     sentences = open(sentence_file, 'r').readlines()
-    options = cPickle.load(open(arg_file, "rb"))
+    options = pickle.load(open(arg_file, "rb"))
     print(options)
     outfile = open('outfile_evaluate_all.txt', 'w')
     encoder, decoder, vocab_src, vocab_tgt = initialize_model(options, vocab_file, model_file)
@@ -212,7 +213,7 @@ def test_single():
     model_file = sys.argv[1]
     arg_file = sys.argv[2]
     vocab_file = sys.argv[3]
-    options = cPickle.load(open(arg_file, "rb"))
+    options = pickle.load(open(arg_file, "rb"))
     print(options)
     test(options, vocab_file, model_file)
 

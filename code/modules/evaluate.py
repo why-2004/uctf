@@ -116,7 +116,7 @@ def generate(encoder, decoder, input_sentences, options, vocab_src, vocab_tgt, e
     output_sentences = []
     num_sentences = len(input_sentences)
     total_b = 0
-    for idx in xrange(num_sentences):
+    for idx in range(num_sentences):
         input_sentence = input_sentences[idx]
         output_words, attentions = evaluate(encoder, decoder, input_sentence, max_length, vocab_src, vocab_tgt,
                                             options, pretraining, control_len)

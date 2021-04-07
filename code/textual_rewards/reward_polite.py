@@ -85,7 +85,7 @@ def avg_formal_word_count(text):
 	return avg_fw
 
 def compute_readability(text):
-        score = float(len(s)) / float(len(s.split()))
+        score = float(len(text)) / float(len(text.split()))
         score = score / float(10)
 
 

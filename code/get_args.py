@@ -16,13 +16,12 @@ from modules.masked_cross_entropy import *
 from modules.ControllableDataset import *
 from modules.ControllableModel import *
 from modules.evaluate import *
-from modules.MovingAvg import *
 from modules.trainer import *
 from scorer import *
 import torch.utils.data as data_utils
 import opts
 import argparse
-import cPickle
+import pickle
 from modules.Vocab import Vocab
 from vectorizer import *
 
@@ -116,9 +115,11 @@ def initialize_model(options):
     encoder_parameters = filter(lambda p: p.requires_grad, encoder.parameters())
 
     if options.decoder == 'attn-rnn':
-        print('Decoder:: DecoderWithAttn')
-        decoder = ControllableDecoderWithAttn(options.rnn_size, vocab_tgt.get_n_words, options.emb_size,
-                                              embedding, options.layers)
+        print('Decoder:: Decoder No Attention')
+        #decoder = ControllableDecoderWithAttn(options.rnn_size, vocab_tgt.get_n_words, options.emb_size,
+        #                                      embedding, options.layers)
+        decoder = ControllableDecoder(options.rnn_size, vocab_tgt.get_n_words, options.emb_size,
+                                      embedding, control_len, options.layers)
     else:
         print('Decoder:: Decoder No Attention')
         decoder = ControllableDecoder(options.rnn_size, vocab_tgt.get_n_words, options.emb_size,
@@ -180,7 +181,7 @@ def train(options):
     word_to_id = vocab_src.word_to_id
     simmat = None
     vectorizer_fn = None
-    syn_function = cPickle.load(open("syn.dat", 'rb'))
+    syn_function = pickle.load(open("syn.dat", 'rb'))
     '''
     if options.use_vector:
         syn_resources = cPickle.load(open("syn.dat",'rb'))
@@ -209,7 +210,6 @@ def train(options):
 
     epoch = options.start_epoch
     avg_reward = 0
-    ma = MovingAverage(3)
     # ma = KMaxAvg(3)
     total_reward = 0
     train_with_rl = True
@@ -263,7 +263,7 @@ def train(options):
         print('************************ av ', total_reward)
 
         if total_reward < prev_total_reward:
-            print "Batch reward did not improve. Skipping Exploitation"
+            print("Batch reward did not improve. Skipping Exploitation")
             continue
         prev_total_reward = total_reward
         datasetPre = ControllableSupervisedDatasetFromArray(updated_src, updated_tgt, updated_control, 'unit_test',
@@ -330,7 +330,7 @@ def main():
     argfile = options.save_model + '_arg.p'
 
     print('Saving arguments in ' + argfile)
-    cPickle.dump(options, open(argfile, "wb"))
+    pickle.dump(options, open(argfile, "wb"))
 
     # arguments = cPickle.load(open(argfile, "rb"))
     # print(arguments)  

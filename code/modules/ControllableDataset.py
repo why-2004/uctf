@@ -1,8 +1,7 @@
 # import  torch.utils.data.Dataset
-from modules.Vocab import *
+from Vocab import *
 import torch.utils.data as data_utils
 import torch
-
 
 
 class ControllableUnsupervisedDatasetFromArray():
@@ -39,7 +38,7 @@ class ControllableUnsupervisedDatasetFromArray():
         return example
 
     def get_control(self, s):
-        #slist = s.split(' ')
+        # slist = s.split(' ')
         control_list = [float(x) for x in s]
         control_list = np.asarray(control_list, dtype='float32')
         control_tensor = torch.from_numpy(control_list)
@@ -57,10 +56,10 @@ class ControllableSupervisedDatasetFromArray():
         :param src_msl: max sequence length
         :param tgt_msl: max sequence length
         """
-        #sf = open(src_data_file, 'r')
-        #tf = open(tgt_data_file, 'r')
-        #self.src_lines = sf.readlines()
-        #self.tgt_lines = tf.readlines()
+        # sf = open(src_data_file, 'r')
+        # tf = open(tgt_data_file, 'r')
+        # self.src_lines = sf.readlines()
+        # self.tgt_lines = tf.readlines()
         self.src_lines = src_lines
         self.tgt_lines = tgt_lines
         self.controls = controls
@@ -79,8 +78,8 @@ class ControllableSupervisedDatasetFromArray():
     def __getitem__(self, idx):
         src_line = self.src_lines[idx].rstrip()
         tgt_line = self.tgt_lines[idx].rstrip()
-        #src_sentence = src_line.split('    ')[0].strip('\r\n')
-        #control_list = src_line.split('    ')[1].strip('\r\n')
+        # src_sentence = src_line.split('    ')[0].strip('\r\n')
+        # control_list = src_line.split('    ')[1].strip('\r\n')
         src_sentence = src_line
         tgt_sentence = tgt_line
 
@@ -95,12 +94,12 @@ class ControllableSupervisedDatasetFromArray():
                                                                prependGO=False, eos=True)
         tgt_tensor = torch.LongTensor(tgt_int)
 
-        example = {'src': src_tensor, 'src_len': src_len, 'tgt': tgt_tensor,'tgt_len': tgt_len,
+        example = {'src': src_tensor, 'src_len': src_len, 'tgt': tgt_tensor, 'tgt_len': tgt_len,
                    'control_tensor': control_tensor}
         return example
 
     def get_control(self, s):
-        #slist = s.split(' ')
+        # slist = s.split(' ')
         control_list = [float(x) for x in s]
         control_list = np.asarray(control_list, dtype='float32')
         control_tensor = torch.from_numpy(control_list)
@@ -109,8 +108,10 @@ class ControllableSupervisedDatasetFromArray():
     def get_num_instances(self):
         return self.num_instances
 
+
 class SupervizedLoader():
     """Dataset class which defines basic NMT dataset"""
+
     def __init__(self, src_data_list, tgt_data_list, name, vocab_src, vocab_tgt, src_msl, tgt_msl):
         """
         :param src_data_list: source data list
@@ -118,43 +119,48 @@ class SupervizedLoader():
         :param src_msl: max sequence length
         :param tgt_msl: max sequence length
         """
-        
+
         self.src_lines = src_data_list
         self.tgt_lines = tgt_data_list
-        assert  len(self.src_lines) == len(self.tgt_lines), 'Number of source and target instance should match: ' + str(len(self.src_lines)) + ' ' + str(len(self.tgt_lines))
+        assert len(self.src_lines) == len(self.tgt_lines), 'Number of source and target instance should match: ' + str(
+            len(self.src_lines)) + ' ' + str(len(self.tgt_lines))
         self.vocab_tgt = vocab_tgt
         self.vocab_src = vocab_src
         self.src_msl = src_msl
         self.tgt_msl = tgt_msl
         self.num_instances = len(self.src_lines)
+
     def __len__(self):
         return len(self.tgt_lines)
+
     def get_num_instances(self):
         return self.num_instances
 
     def __getitem__(self, idx):
-        #print('get item', idx)
+        # print('get item', idx)
         src = self.src_lines[idx].rstrip()
         tgt = self.tgt_lines[idx].rstrip()
 
-        src_int, src_len = self.vocab_src.sentence_to_word_ids(src, max_sequence_length = self.src_msl, prependGO = False, eos = True)
+        src_int, src_len = self.vocab_src.sentence_to_word_ids(src, max_sequence_length=self.src_msl, prependGO=False,
+                                                               eos=True)
 
-        #Removing append <GO> from here, as during creating training batch it is done.
-        tgt_int, tgt_len = self.vocab_tgt.sentence_to_word_ids(tgt, max_sequence_length = self.tgt_msl, prependGO = False, eos = True)
+        # Removing append <GO> from here, as during creating training batch it is done.
+        tgt_int, tgt_len = self.vocab_tgt.sentence_to_word_ids(tgt, max_sequence_length=self.tgt_msl, prependGO=False,
+                                                               eos=True)
 
-        #print('src_int len', len(src_int))
-        #print('tgt_int len', len(tgt_int))
-        #print('tgt_len ', tgt_len)
-        #print('src_len ', src_len)
+        # print('src_int len', len(src_int))
+        # print('tgt_int len', len(tgt_int))
+        # print('tgt_len ', tgt_len)
+        # print('src_len ', src_len)
 
         src_tensor = torch.LongTensor(src_int)
         tgt_tensor = torch.LongTensor(tgt_int)
 
-
-        #print('src_tensor ', src_tensor.size())
-        #print('tgt_tensor ', tgt_tensor.size())
-        example = {'src' : src_tensor, 'tgt' : tgt_tensor, 'src_len' : src_len, 'tgt_len' : tgt_len}
+        # print('src_tensor ', src_tensor.size())
+        # print('tgt_tensor ', tgt_tensor.size())
+        example = {'src': src_tensor, 'tgt': tgt_tensor, 'src_len': src_len, 'tgt_len': tgt_len}
         return example
+
 
 class UnsupervisedDataset():
 
@@ -188,8 +194,9 @@ class UnsupervisedDataset():
 
 def test():
     vocab = Vocab(['../small_test_data/train.src', '../small_test_data/train.tgt'])
-    dataset = ControllableDataset('../small_test_data/train.src', '../small_test_data/train.tgt', 'unit_test', vocab,
-                                  vocab, 15, 15)
+    dataset = ControllableUnsupervisedDatasetFromArray('../small_test_data/train.src', '../small_test_data/train.tgt',
+                                                       'unit_test', vocab,
+                                                       vocab, 15, 15)
     # print(dataset)
     vocab.print_vocab()
     # for i in range(len(dataset)):
@@ -206,9 +213,5 @@ def test():
         break
 
 
-
-
 if __name__ == "__main__":
     test()
-
-

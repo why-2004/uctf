@@ -3,7 +3,7 @@ import numpy as np
 from torch.nn import functional
 from torch.autograd import Variable
 from nltk.translate.bleu_score import SmoothingFunction
-from modules.masked_cross_entropy import *
+from masked_cross_entropy import *
 import hashlib
 import json
 from torch import topk as topK
@@ -46,7 +46,7 @@ def get_per_word_reward_controlled(msl, ctrl):
 def get_per_word_same_output_score(ref, sent, msl):
     rewards = np.zeros(msl)
     tlen = min(len(ref), len(sent))
-    for idx in xrange(tlen):
+    for idx in range(tlen):
         w = sent[idx]
         if w == ref[idx]:
             rewards[idx] = 1
@@ -58,7 +58,7 @@ def get_per_word_same_output_score(ref, sent, msl):
 def get_per_word_setoverlap_score(ref, sent, msl):
     rewards = np.zeros(msl)
     tlen = min(len(ref), len(sent))
-    for idx in xrange(tlen):
+    for idx in range(tlen):
         w = sent[idx]
         if w in ref:
             rewards[idx] = 0.1
@@ -142,7 +142,7 @@ def sample_sentence(decoder_output, max_length, vocab_tgt, syn_func):
 def sample_sentences(decoder_output, max_length, vocab_tgt, syn_func, sampled, n):
     sentences = []
     max_try = 2 * n
-    for i in xrange(max_try):
+    for i in range(max_try):
         if len(sentences) > n - 1:
             break
         # sentence = sample_sentence(decoder_output, max_length, vocab_tgt,syn_func)
@@ -255,7 +255,7 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
     rewards = np.zeros([max_length, batch_size])
     # sm_dump = open('probs.txt', 'a')
     debug_file = open(opts.save_model + "_debug.txt", 'a')
-    for i in xrange(batch_size):
+    for i in range(batch_size):
         decoder_output = logits[i]
         decoder_output = functional.softmax(decoder_output)
         decoded_words = []

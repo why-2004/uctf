@@ -22,7 +22,7 @@ from scorer import *
 import torch.utils.data as data_utils
 import opts
 import argparse
-import cPickle
+import pickle
 from modules.Vocab import Vocab
 from vectorizer import *
 from score_model import *
@@ -178,7 +178,7 @@ def train(options):
     word_to_id = vocab_src.word_to_id
     simmat = None
     vectorizer_fn = None
-    syn_function = cPickle.load(open("syn.dat", 'rb'))
+    syn_function = pickle.load(open("syn.dat", 'rb'))
     '''
     if options.use_vector:
         syn_resources = cPickle.load(open("syn.dat",'rb'))
@@ -342,7 +342,7 @@ def main():
     argfile = options.save_model + '_arg.p'
 
     print('Saving arguments in ' + argfile)
-    cPickle.dump(options, open(argfile, "wb"))
+    pickle.dump(options, open(argfile, "wb"))
 
     train(options)
 

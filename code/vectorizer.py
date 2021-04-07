@@ -1,5 +1,5 @@
 from gensim.models import Word2Vec,KeyedVectors
-import logging, numpy, cPickle
+import logging, numpy, pickle
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
@@ -40,7 +40,7 @@ def vector_builder_for_ce(text, simmat):
 	
 def vectorize(text):
 	with open("simmat.dat","rb") as f:
-		simmat = cPickle.load(f)
+		simmat = pickle.load(f)
 		return vector_builder_for_ce(text, simmat)
 		
 if __name__=="__main__":
@@ -49,7 +49,7 @@ if __name__=="__main__":
 	dummy_vocab = {'i':1,'me':2,'myself':3,'you':4,'he':5,'formal':6,'informal':7}
 	dummy_text = "i formal"
 	
-	print 'Preparing simmat file'
+	print('Preparing simmat file')
 	simmat = pre_compute_similarity_matrix(dummy_vocab)
-	cPickle.dump(simmat,open("simmat.dat","wb"))
-	print vectorize(dummy_text)	
+	pickle.dump(simmat,open("simmat.dat","wb"))
+	print (vectorize(dummy_text)	)

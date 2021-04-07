@@ -29,7 +29,7 @@ def create_rewards_extended_tensor_per_word(rewards, bs, msl, vs):
 def get_per_word_score(ref, sent, msl):
     rewards = np.zeros(msl)
     tlen = min(len(ref), len(sent))
-    for idx in xrange(tlen):
+    for idx in range(tlen):
         w = sent[idx]
         if w == ref[idx]:
             rewards[idx] = 1
@@ -41,7 +41,7 @@ def get_per_word_score(ref, sent, msl):
 def get_per_word_avg_reward(ref, sent, msl, avg_reward):
     rewards = np.zeros(msl)
     tlen = min(len(ref), len(sent))
-    for idx in xrange(tlen):
+    for idx in range(tlen):
         w = sent[idx]
         if w == ref[idx]:
             rewards[idx] = 2
@@ -102,7 +102,7 @@ def get_rewards_and_fake_targets_per_word(logits, target, length, vocab_tgt, opt
     sm_dump = open('probs.txt', 'a')
     if opts.use_cuda:
         fake_target_output = fake_target_output.cuda()
-    for i in xrange(batch_size):
+    for i in range(batch_size):
         decoder_output = logits[i]
         decoder_output = functional.softmax(decoder_output)
         decoded_words = []
@@ -168,7 +168,7 @@ def get_cross_entropy_rewards_and_fake_targets(logits, target, length,loss_, voc
     rewards = []
     if opts.use_cuda:
         fake_target_output = fake_target_output.cuda()
-    for i in xrange(batch_size):
+    for i in range(batch_size):
         decoder_output = logits[i]
         decoder_output_sm = functional.softmax(decoder_output)
         decoder_output = decoder_output.view(1, max_length, num_classes)
@@ -223,7 +223,7 @@ def get_rewards_and_fake_targets(logits, target, length, vocab_tgt, opts):
     rewards = []
     if opts.use_cuda:
         fake_target_output = fake_target_output.cuda()
-    for i in xrange(batch_size):
+    for i in range(batch_size):
         decoder_output = logits[i]
         decoder_output = functional.softmax(decoder_output)
         decoded_words = []
@@ -288,7 +288,7 @@ def reward_loss(logits, target, length, vocab_tgt, opts):
     if opts.use_cuda:
         TR = TR.cuda()
         R = R.cuda()
-    for i in xrange(batch_size):
+    for i in range(batch_size):
         #print('Batch **** ', i)
         decoder_output = logits[i]
         #print('decoder_output shape')

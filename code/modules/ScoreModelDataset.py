@@ -56,7 +56,7 @@ class ScoreModelDataset():
 
     def get_control(self, s):
         # slist = s.split(' ')
-        control_list = [long(x) for x in s]
+        control_list = [int(x) for x in s]
         control_list = np.asarray(control_list, dtype='float32')
         control_tensor = torch.from_numpy(control_list)
         return control_tensor
