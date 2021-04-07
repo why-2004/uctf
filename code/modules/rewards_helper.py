@@ -8,7 +8,7 @@ import hashlib
 import json
 from torch import topk as topK
 
-from objectivity_assessor import assess_objectivity
+from modules.objectivity_assessor import assess_objectivity
 
 np.random.seed(1)
 
