@@ -4,7 +4,7 @@ from torch.nn import functional
 from torch.autograd import Variable
 import nltk.translate.bleu_score as bs
 from nltk.translate.bleu_score import SmoothingFunction
-from masked_cross_entropy import  *
+from modules.masked_cross_entropy import  *
 
 def create_rewards_extended_tensor(rewards, bs, msl, vs):
     """

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from rewards_helper import *
-from loss import *
+from modules.rewards_helper import *
+from modules.loss import *
 from torch.nn import functional
 
 

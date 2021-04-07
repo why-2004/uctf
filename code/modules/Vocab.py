@@ -6,7 +6,7 @@ tools to build vocabulary
 
 from nltk.tokenize import word_tokenize
 from collections import Counter
-from PretrainedEmbeddings import *
+from modules.PretrainedEmbeddings import *
 import numpy as np
 
 # from clean_str import *

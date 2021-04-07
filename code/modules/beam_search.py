@@ -4,7 +4,7 @@ from numpy import argmax
 import torch
 from torch.nn import functional
 from torch.autograd import Variable
-from Vocab import *
+from modules.Vocab import *
 
 # beam search
 def beam_search(data, k):

@@ -3,7 +3,7 @@ import numpy as np
 from torch.nn import functional
 from torch.autograd import Variable
 from nltk.translate.bleu_score import SmoothingFunction
-from masked_cross_entropy import *
+from modules.masked_cross_entropy import *
 import hashlib
 import json
 from torch import topk as topK

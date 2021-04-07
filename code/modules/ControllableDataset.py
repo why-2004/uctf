@@ -1,5 +1,5 @@
 # import  torch.utils.data.Dataset
-from Vocab import *
+from modules.Vocab import *
 import torch.utils.data as data_utils
 import torch
 
