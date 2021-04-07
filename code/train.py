@@ -6,7 +6,7 @@ import time
 import datetime
 import math
 import socket
-import sys,shutil, os
+import sys, shutil, os
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
@@ -27,9 +27,9 @@ from modules.Vocab import Vocab
 from vectorizer import *
 from score_model import *
 
-
-control_len = 1 # We can have more than one controls
+control_len = 1  # We can have more than one controls
 bidirectional = True
+
 
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     print('Saving model at ' + filename)
@@ -37,15 +37,16 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     if is_best:
         shutil.copyfile(filename, 'model_best.pth.tar')
 
+
 def save_model(encoder, decoder, vocab_src, vocab_tgt, encoder_optimizer, epoch, options):
-    #TODO: Save vocabulary object
-    #vocab_src.save_vocab(options.save_model + ".vocab")
+    # TODO: Save vocabulary object
+    # vocab_src.save_vocab(options.save_model + ".vocab")
     model = {
         'encoder': encoder.state_dict(),
         'decoder': decoder.state_dict(),
         'encoder_optimizer': encoder_optimizer.state_dict(),
-        'start_epoch':epoch,
-        'options':options
+        'start_epoch': epoch,
+        'options': options
     }
     save_checkpoint(model, False, options.save_model + '_epoch_' + str(epoch))
 
@@ -67,7 +68,7 @@ def load_model(options):
             return checkpoint
 
 
-def pretrain(dataloader, encoder, pre_train_decoder,optimizer, vocab_tgt, options):
+def pretrain(dataloader, encoder, pre_train_decoder, optimizer, vocab_tgt, options):
     print('########## pretraining #############')
     epoch = 0
     while epoch < options.num_epoch_pretrain:
@@ -75,7 +76,7 @@ def pretrain(dataloader, encoder, pre_train_decoder,optimizer, vocab_tgt, option
         epoch_loss = 0
         for sample_batched in dataloader:
             input_batches = Variable(sample_batched['src']).transpose(0, 1)  # will give seq_len x batch_size
-            control_batches = Variable(sample_batched['control_tensor'])# this is  bs x control_len
+            control_batches = Variable(sample_batched['control_tensor'])  # this is  bs x control_len
 
             input_lengths = sample_batched['src_len']
             input_lengths, perm_idx = input_lengths.sort(0, descending=True)
@@ -116,13 +117,11 @@ def initialize_model(options):
     decoder = ControllableAttnDecoderRNN(decoder_hidden_size, vocab_tgt.get_n_words, options.emb_size,
                                          embedding, control_len, options.layers)
 
-
     pre_train_decoder = decoder
-    #if True:#options.pretrain_decoder:
+    # if True:#options.pretrain_decoder:
     #    pre_train_decoder = decoder
-    #else:
+    # else:
     #    pre_train_decoder = ControllableDecoder(options.rnn_size, vocab_tgt.get_n_words,options.emb_size,  embedding, options.layers)
-
 
     if options.use_cuda:
         decoder.cuda()
@@ -131,19 +130,19 @@ def initialize_model(options):
         pre_train_decoder.cuda()
 
     opt_param_pretrain = (
-        set(encoder_parameters) |
-        set(pre_train_decoder.parameters()) |
-        set(embedding.parameters()))
+            set(encoder_parameters) |
+            set(pre_train_decoder.parameters()) |
+            set(embedding.parameters()))
 
-    pretrain_optimizer = optim.Adam(opt_param_pretrain, lr=options.learning_rate,eps=1e-3, amsgrad=True)
-    #pretrain_optimizer = optim.Adam(opt_param_pretrain, lr=options.learning_rate)
+    pretrain_optimizer = optim.Adam(opt_param_pretrain, lr=options.learning_rate, eps=1e-3, amsgrad=True)
+    # pretrain_optimizer = optim.Adam(opt_param_pretrain, lr=options.learning_rate)
 
     opt_param = (
-        set(encoder_parameters) |
-        set(decoder.parameters()) |
-        set(embedding.parameters()))
-    optimizer = optim.Adam(opt_param, lr=options.learning_rate,eps=1e-3, amsgrad=True)
-    #optimizer = optim.Adam(opt_param, lr=options.learning_rate)
+            set(encoder_parameters) |
+            set(decoder.parameters()) |
+            set(embedding.parameters()))
+    optimizer = optim.Adam(opt_param, lr=options.learning_rate, eps=1e-3, amsgrad=True)
+    # optimizer = optim.Adam(opt_param, lr=options.learning_rate)
 
     if options.resume:
         print('Resuming')
@@ -155,7 +154,8 @@ def initialize_model(options):
     else:
         if not options.pretrain and options.load_pretrained:
             if os.path.isfile(options.pre_trained_model):
-                print('########WARNING IT ONLY LOADS PRETRAINED DOES NOT RESUME A TRAINED MODEL: Loading pretrained model #######')
+                print(
+                    '########WARNING IT ONLY LOADS PRETRAINED DOES NOT RESUME A TRAINED MODEL: Loading pretrained model #######')
                 checkpoint = torch.load(options.pre_trained_model)
                 encoder.load_state_dict(checkpoint['encoder'])
                 pre_train_decoder.load_state_dict(checkpoint['decoder'])
@@ -163,21 +163,22 @@ def initialize_model(options):
         if options.embeddings:
             print('######## Loading embeddings from, ', options.embeddings)
             pretrained_weight = vocab_src.get_glove_embeddings(options.embeddings, options.emb_size)
-            #encoder.embedding.weight.data.copy_(torch.from_numpy(pretrained_weight))
+            # encoder.embedding.weight.data.copy_(torch.from_numpy(pretrained_weight))
             embedding.weight.data.copy_(torch.from_numpy(pretrained_weight))
             if not options.train_embedding:
                 embedding.weight.requires_grad = False
 
-    return vocab_src, vocab_tgt, encoder, decoder,pre_train_decoder, optimizer,pretrain_optimizer
+    return vocab_src, vocab_tgt, encoder, decoder, pre_train_decoder, optimizer, pretrain_optimizer
 
 
 def train(options):
-    vocab_src, vocab_tgt, encoder, decoder, pre_train_decoder, encoder_optimizer,pretrain_optimizer = initialize_model(options)
+    vocab_src, vocab_tgt, encoder, decoder, pre_train_decoder, encoder_optimizer, pretrain_optimizer = initialize_model(
+        options)
     scorer = Scorer(options)
     word_to_id = vocab_src.word_to_id
     simmat = None
     vectorizer_fn = None
-    syn_function = cPickle.load(open("syn.dat",'rb'))
+    syn_function = cPickle.load(open("syn.dat", 'rb'))
     '''
     if options.use_vector:
         syn_resources = cPickle.load(open("syn.dat",'rb'))
@@ -199,46 +200,47 @@ def train(options):
             print('ERROR: Source file to pretrain is not passes. Use -pretrain_src')
 
         pretrain_lines = open(options.pretrain_src, 'r').readlines()
-        pretrain_dataset = ControllableUnsupervisedDatasetFromArray(pretrain_lines, None, control_len, "pretrain_data", vocab_src,
-                                                                options.src_seq_length)
+        pretrain_dataset = ControllableUnsupervisedDatasetFromArray(pretrain_lines, None, control_len, "pretrain_data",
+                                                                    vocab_src,
+                                                                    options.src_seq_length)
         pretrain_dataloader = data_utils.DataLoader(pretrain_dataset, batch_size=options.batch_size,
                                                     shuffle=options.shuffle, num_workers=1)
         pretrain(pretrain_dataloader, encoder, pre_train_decoder, pretrain_optimizer, vocab_tgt, options)
         print('####################### Pretraining Ends here')
-        #generate(encoder, pre_train_decoder, valid_inputs, options, vocab_src, vocab_tgt, 0, True)
+        # generate(encoder, pre_train_decoder, valid_inputs, options, vocab_src, vocab_tgt, 0, True)
 
     epoch = options.start_epoch
     avg_reward = 0
     total_reward = 0
     train_with_rl = True
     count_train_without_rl = 0
-    sampled = set(["1"]) #will contain sampled output
+    sampled = set(["1"])  # will contain sampled output
     prev_total_reward = 0
     src_lines = open(options.train_src, 'r').readlines()
     valid_lines = open(options.valid_src, 'r').readlines()
     explore_dataset = ControllableUnsupervisedDatasetFromArray(src_lines, None, control_len, "pretrain_data",
-                                                                vocab_src,
-                                                                options.src_seq_length)
+                                                               vocab_src,
+                                                               options.src_seq_length)
     explore_dataloader = data_utils.DataLoader(explore_dataset, batch_size=options.batch_size,
-                                                shuffle=options.shuffle, num_workers=1)
+                                               shuffle=options.shuffle, num_workers=1)
 
     print('######### Training ########')
     while epoch < options.epochs:
         epoch += 1
-        if epoch%5 == 0:
+        if epoch % 5 == 0:
             print("Training epoch ", epoch)
-        print ("Exploring ", epoch)
+        print("Exploring ", epoch)
         batch_num = 0
         total_reward = 0
-        
-        #hold the new data (sampled) 
+
+        # hold the new data (sampled)
         updated_src = []
         updated_tgt = []
         updated_control = []
         for sample_batched in explore_dataloader:
             batch_num = batch_num + 1
             print('batch_num ', batch_num)
-            input_batches = Variable(sample_batched['src']).transpose(0, 1) #will give seq_len x batch_size
+            input_batches = Variable(sample_batched['src']).transpose(0, 1)  # will give seq_len x batch_size
             control_batches = Variable(sample_batched['control_tensor'])  # this is  bs x control_len
 
             input_lengths = sample_batched['src_len']
@@ -251,7 +253,7 @@ def train(options):
             new_src, new_tgt, new_control, curr_avg_reward = train_batch_rl_tf(
                 input_batches, input_lengths, control_batches,
                 encoder, decoder, encoder_optimizer, options, vocab_tgt,
-                avg_reward, scorer, epoch, options.use_vector, syn_function,sampled)
+                avg_reward, scorer, epoch, options.use_vector, syn_function, sampled)
             total_reward = total_reward + curr_avg_reward
 
             updated_src = updated_src + new_src
@@ -264,47 +266,48 @@ def train(options):
                 pass
 
         print('length of new updated samples ', len(updated_src))
-        print ("Sampled count ", len(sampled))
+        print("Sampled count ", len(sampled))
         print('************************ av ', total_reward)
         if len(updated_src) < options.batch_size - 2:
             print('Continuing since less data sampled ' + str(len(updated_src)))
 
         print('##############Training reward predictor model#############')
         smodel.train(True)
-        train_score_model(updated_src, updated_tgt, updated_control, vocab_src, vocab_tgt, smodel, scriterion, soptimizer, options)
+        train_score_model(updated_src, updated_tgt, updated_control, vocab_src, vocab_tgt, smodel, scriterion,
+                          soptimizer, options)
 
-        
-        #if total_reward<prev_total_reward:
+        # if total_reward<prev_total_reward:
         #    print "Batch reward did not improve. Skipping Exploitation"
         #    continue
         prev_total_reward = total_reward
-        datasetPre = ControllableSupervisedDatasetFromArray(updated_src,updated_tgt, updated_control, 'unit_test',
-                                                            vocab_src , vocab_tgt,options.src_seq_length,options.src_seq_length)
+        datasetPre = ControllableSupervisedDatasetFromArray(updated_src, updated_tgt, updated_control, 'unit_test',
+                                                            vocab_src, vocab_tgt, options.src_seq_length,
+                                                            options.src_seq_length)
         num_instancesPre = datasetPre.num_instances
         num_batchesPre = math.ceil(num_instancesPre / options.batch_size)
-        dataloaderPre = data_utils.DataLoader(datasetPre, batch_size=options.batch_size, shuffle=options.shuffle, num_workers=1)
-        
-        print ("Exploiting ", epoch)
+        dataloaderPre = data_utils.DataLoader(datasetPre, batch_size=options.batch_size, shuffle=options.shuffle,
+                                              num_workers=1)
+
+        print("Exploiting ", epoch)
         ex_epoch = 0
         smodel.train(False)
-        
+
         while ex_epoch < options.num_epoch_pretrain:
             ex_epoch += 1
-            #if ex_epoch % 5 == 0:
+            # if ex_epoch % 5 == 0:
             #    print("Sub epoch ", epoch)
-            
+
             batch_num = 1
             ex_epoch_loss = 0
-            
+
             for sample_batched in dataloaderPre:
                 batch_num = batch_num + 1
                 input_batches = Variable(sample_batched['src']).transpose(0, 1)  # will give seq_len x batch_size
                 input_lengths = sample_batched['src_len']
-                
+
                 output_batches = Variable(sample_batched['tgt']).transpose(0, 1)  # will give seq_len x batch_size
                 output_lengths = sample_batched['tgt_len']
                 control_batches = Variable(sample_batched['control_tensor'])  # this is  bs x control_len
-
 
                 input_lengths, perm_idx = input_lengths.sort(0, descending=True)
                 input_batches = input_batches[:, perm_idx]
@@ -314,16 +317,16 @@ def train(options):
                 output_lengths = [x for x in output_lengths]
                 control_batches = control_batches[perm_idx, :]
 
-                loss = train_batch(input_batches, input_lengths, output_batches, output_lengths, control_batches, encoder, decoder,
-                            encoder_optimizer, options, vocab_tgt, smodel, scriterion)
-                ex_epoch_loss+=loss
+                loss = train_batch(input_batches, input_lengths, output_batches, output_lengths, control_batches,
+                                   encoder, decoder,
+                                   encoder_optimizer, options, vocab_tgt, smodel, scriterion)
+                ex_epoch_loss += loss
         print('Sub Epoch loss ', ex_epoch_loss / batch_num)
-        
+
         if (epoch % options.generate_every == 0):
             generate(encoder, decoder, valid_lines, options, vocab_src, vocab_tgt, epoch, False, control_len)
-        if(epoch%options.save_every == 0):
-           save_model(encoder, decoder, vocab_src, vocab_tgt, encoder_optimizer, epoch, options)
-
+        if (epoch % options.save_every == 0):
+            save_model(encoder, decoder, vocab_src, vocab_tgt, encoder_optimizer, epoch, options)
 
 
 def main():
@@ -343,6 +346,6 @@ def main():
 
     train(options)
 
+
 if __name__ == '__main__':
     main()
-

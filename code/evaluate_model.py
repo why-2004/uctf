@@ -18,7 +18,7 @@ import torch.utils.data as data_utils
 import opts
 import argparse
 import cPickle
-#import _pickle as cPickle
+# import _pickle as cPickle
 from modules.Vocab import Vocab
 
 control_len = 1
@@ -75,8 +75,7 @@ def evaluate(encoder, decoder, src_sentence, control_vector, max_length, vocab_s
     if options.decoder != 'rnn':
         decoder_attentions = torch.zeros(max_length + 1, max_length + 1)
 
-
-    #print(decoder_input)
+    # print(decoder_input)
     # Run through decoder
     for di in range(max_length):
         decoder_output, decoder_output_projected, decoder_hidden, decoder_attention = decoder(
@@ -136,7 +135,6 @@ def initialize_model(options, vocab_file, model_file):
     decoder = ControllableAttnDecoderRNN(decoder_hidden_size, vocab_tgt.get_n_words, options.emb_size,
                                          embedding, control_len, options.layers)
 
-
     if options.use_cuda and gpu:
         encoder = encoder.cuda()
         decoder = decoder.cuda()
@@ -177,7 +175,7 @@ def test_all(model_file, arg_file, vocab_file, sentences, scorer, outname):
             decoded_words, attn = evaluate(encoder, decoder, sentence, [control_vector], len(sentence.split()) + 1,
                                            vocab_src,
                                            vocab_tgt, options)
-            generated =   ' '.join(decoded_words) + '\n'
+            generated = ' '.join(decoded_words) + '\n'
             reward_package = all_rewards(sentence, generated, scorer, options)
             reward = reward_package[0]
             fileoutstring = fileoutstring + generated + '\t' + str(reward) + '\t'
@@ -186,8 +184,6 @@ def test_all(model_file, arg_file, vocab_file, sentences, scorer, outname):
         outfile.write(sentence + fileoutstring + '\n')
     outfile.close()
     return output_sentences
-
-
 
 
 def test_all_sentences():
@@ -212,10 +208,6 @@ def test_all_sentences():
         outfile.write('-----------' + '\n')
 
 
-
-
-
-
 def test_single():
     model_file = sys.argv[1]
     arg_file = sys.argv[2]
@@ -224,8 +216,10 @@ def test_single():
     print(options)
     test(options, vocab_file, model_file)
 
+
 def main():
     test_all_sentences()
+
 
 if __name__ == '__main__':
     main()

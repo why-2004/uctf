@@ -6,6 +6,7 @@ from modules.ScoreModelDataset import *
 import torch.utils.data as data_utils
 from modules.Vocab import *
 
+
 def _cat_directions(h, bidirectional_encoder):
     if bidirectional_encoder:
         h = torch.cat([h[0:h.size(0):2], h[1:h.size(0):2]], 2)
@@ -32,10 +33,10 @@ class ScoreSentenceEncoder(nn.Module):
             embedded = torch.matmul(input_seqs, self.embedding.weight)
         # print(embedded)
         # print('input_lengths', input_lengths)
-        #packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
-        #outputs, hidden = self.gru(packed, hidden)
+        # packed = torch.nn.utils.rnn.pack_padded_sequence(embedded, input_lengths)
+        # outputs, hidden = self.gru(packed, hidden)
         outputs, hidden = self.gru(embedded, hidden)
-        #outputs, output_lengths = torch.nn.utils.rnn.pad_packed_sequence(outputs)  # unpack (back to padded)
+        # outputs, output_lengths = torch.nn.utils.rnn.pad_packed_sequence(outputs)  # unpack (back to padded)
         # outputs = outputs[:, :, :self.hidden_size] + outputs[:, :, self.hidden_size:]  # Sum bidirectional outputs
         # if self.bidirectional:
         #    outputs = F.tanh(self.bidiout(outputs))
@@ -74,6 +75,7 @@ class ScoreModel(nn.Module):
         # print(out)
         return out
 
+
 def init_score_model(vocab_file):
     learning_rate = 0.001
     emb_size = 100
@@ -94,19 +96,18 @@ def init_score_model(vocab_file):
 
     return model, criterion, optimizer
 
+
 def train_score_model(sentences, gsentences, controls, vocab_src, vocab_tgt, model, criterion, optimizer, options):
     num_epochs = options.num_epoch_pretrain
-    #vocab_file = '../data/vocab_more.txt'
+    # vocab_file = '../data/vocab_more.txt'
 
-    #sentences = open('score_model_test_data/sampled.txt', 'r').readlines()
-    #controls = open('score_model_test_data/control.txt', 'r').readlines()
-    #controls = [[float(c.rstrip())] for c in controls]
+    # sentences = open('score_model_test_data/sampled.txt', 'r').readlines()
+    # controls = open('score_model_test_data/control.txt', 'r').readlines()
+    # controls = [[float(c.rstrip())] for c in controls]
 
     dataset = ScoreModelDataset(sentences, gsentences, controls, 'test',
-                                                     vocab_src, vocab_tgt, 15, 15)
+                                vocab_src, vocab_tgt, 15, 15)
     dataloader = data_utils.DataLoader(dataset, batch_size=16, shuffle=False, num_workers=2)
-
-
 
     for epoch in range(num_epochs):
         batch_num = 0
@@ -143,7 +144,7 @@ def train_score_model(sentences, gsentences, controls, vocab_src, vocab_tgt, mod
             loss.backward()
             optimizer.step()
             epoch_loss += loss.data[0]
-        print ('Epoch %d, Loss: %.4f' % (epoch + 1, epoch_loss))
+        print('Epoch %d, Loss: %.4f' % (epoch + 1, epoch_loss))
 
 
 def main():
@@ -152,11 +153,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
-
-

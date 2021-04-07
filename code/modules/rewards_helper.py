@@ -8,6 +8,8 @@ import hashlib
 import json
 from torch import topk as topK
 
+from objectivity_assessor import assess_objectivity
+
 np.random.seed(1)
 
 
@@ -90,7 +92,7 @@ def sample_single(decoder_output, max_length, vocab_tgt):
         # ni = action[0]
         topv, topi = topK(probs, 1)  # probs.data.topk(1)
         # topv, topi = probs.data.topk(1)
-        #ni = topi[0].data[0]
+        # ni = topi[0].data[0]
         ni = topi[0].item()
         # print ni
         if ni == vocab_tgt.EOS:
@@ -177,7 +179,7 @@ def get_cumulative_rewards(sentence, t, scorer, max_length):
     return [score, scoreV]
 
 
-def all_rewards(t, generated, scorer, opts):
+'''def all_rewards(t, generated, scorer, opts):
     #class_score = scorer.evaluate_ploarity(generated)
     # doc_sim_reward = scorer.doc_sim(generated, t)
     # score_overlap = get_per_word_same_output_score(target_words, decoded_words, max_length)
@@ -207,6 +209,26 @@ def all_rewards(t, generated, scorer, opts):
 
     # reward_package = [total_score, class_score, ss_score, lm_score, readability, len_score]
     reward_package = [total_score, ss_score, lm_score, readability]
+    return reward_package
+'''
+
+
+def all_rewards(t, generated, scorer, opts):
+    try:
+        max_length = opts.src_seq_length
+        readability = scorer.readability(t, max_length)
+    except:
+        readability = 0.0
+    try:
+        objectivity = assess_objectivity(t)
+    except:
+        objectivity = 0.0
+    try:
+        lm_score = scorer.lang_model_score(generated)
+    except:
+        lm_score = 0.0
+    total_score = (lm_score * opts.lm_w)+(readability * opts.fw_w)+(objectivity*opts.dc_w)
+    reward_package = [total_score, objectivity, lm_score, readability]
     return reward_package
 
 
@@ -239,7 +261,7 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
         decoded_words = []
         target_words = []
         actual_target_output = input[i]
-    
+
         for ti in range(length[i]):
             target_words.append(vocab_tgt.index2word(actual_target_output[ti].item()))
         t = ' '.join(target_words)
@@ -284,20 +306,19 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
             # score =  get_per_word_reward_from_score_modified(max_length,scoreV,total_score) #uncomment for variable reward
             reward_package = reward_package_sampled
             if opts.debug:
-                print (" Sampled Sentence", generated)
+                print(" Sampled Sentence", generated)
         else:
             generated = generated_default
             reward_package = reward_package_default
             scoreV = scoreV_default
             if opts.debug:
-                print ("Default Sentence", generated)
-                print ("No need to append")
+                print("Default Sentence", generated)
+                print("No need to append")
             continue
         t = t.replace("<EOS>", "").strip()
         generated = generated.replace("<EOS>", "").strip()
         new_src.append(t)
         generated = scorer.remove_redundant(generated)
-
 
         # logic for rewards computation
         reward_formal_t = reward_package[4]
@@ -306,7 +327,7 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
 
         current_control = 0
 
-        #if opts.debug:
+        # if opts.debug:
         #    print ("reward_formal_ratio", reward_formal_ratio)
         if reward_formal_ratio <= 1:
             current_control = 1
@@ -317,10 +338,10 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
         elif reward_formal_ratio > 1.01 and reward_formal_ratio <= 1.02:
             reward_list.append([3])
             current_control = 3
-        else: #reward_formal_ratio > 1.02:
+        else:  # reward_formal_ratio > 1.02:
             reward_list.append([4])
             current_control = 4
-        #else:
+        # else:
         #    reward_list.append([1])
         #    current_control = 1
 
@@ -330,7 +351,6 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
         else:
             new_tgt.append(t)
             selected_sen = t
-
 
         debug_json = {}
         if opts.debug:
@@ -344,7 +364,7 @@ def get_rewards_and_fake_targets_per_word(logits, input, length, vocab_tgt, opts
             d = json.dumps(debug_json, indent=4, sort_keys=True)
             print(d)
         debug_file.write(json.dumps(debug_json) + '\n')
-            #print ('total_score, class_score, ss_score, lm_score, readability', str(reward_package))
+        # print ('total_score, class_score, ss_score, lm_score, readability', str(reward_package))
         score = get_per_word_reward_from_score_modified(max_length, scoreV, reward_package[0])
         score_ = score  # check_avg(avg_reward, score, opts.baseline)
         rewards[:, i] = score_
